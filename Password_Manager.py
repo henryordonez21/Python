@@ -1,9 +1,16 @@
-
 import os
 
 FILENAME = "passwords.txt"
 
+def parse_line(line):
+    parts = line.strip().split(",", 2)
+    if len(parts) != 3:
+        return None
+    return parts
+
 def add_password():
+    if not os.path.exists(FILENAME):
+        open(FILENAME, "w").close()
     website =  input("Website: ").strip()
     username = input("Username: ").strip()
     password = input("Password: ").strip()
@@ -11,8 +18,11 @@ def add_password():
     with open(FILENAME, "r") as f:
         found = False
         for line in f:
-            parts = line.strip().split(",",2)
-            file_website, file_username, _ = parts
+            data = parse_line(line)
+            if not data:
+                continue
+
+            file_website, file_username, _ = data
             if file_website.lower() == website.lower() and file_username.lower() == username.lower():
                 found = True
                 print("Duplicate found! Password not saved.")
@@ -33,16 +43,15 @@ def view_password():
     
     with open(FILENAME,"r") as f:
         for line in f:
-            parts = line.strip().split(",", 2)
-
-            if len(parts) != 3:
+            data = parse_line(line)
+            if not data:
                 continue
 
-            stored_site, username, password = parts
+            stored_site, username, password = data
 
             if stored_site.lower() == website.lower():
-                print("Username", username)
-                print("Password", password)
+                print(f"Username: {username}")
+                print(f"Password: {password}")
                 print()
                 found = True
 
@@ -58,14 +67,47 @@ def view_all():
     print("-" * 30)
     with open(FILENAME,"r") as f:
         for line in f:
-            parts = line.strip().split(",", 2)
-
-            if len(parts) != 3:
+            data = parse_line(line)
+            if not data:
                 continue
-            website, username, password = parts
+            website, username, password = data
             print(f"Website: {website} | Username: {username}")
 
     print("-" * 30)
+
+def update_password():
+    website = input("Enter Website to update: \n")
+    username = input("Enter Username to update: \n")
+
+    if not os.path.exists(FILENAME):
+        print("No passwords saved yet. \n")
+        return
+    
+    lines = []
+    found = False
+
+    with open(FILENAME, "r") as f:
+        for line in f:
+            data = parse_line(line)
+            if not data:
+                continue
+            stored_site, file_username, password = data
+
+            if stored_site.lower() == website.lower() and file_username.lower() == username.lower():
+                new_password = input("Enter new password: ").strip()
+                lines.append(f"{stored_site},{file_username},{new_password}\n")
+                found = True
+            else:
+                lines.append(f"{stored_site},{file_username},{password}\n")
+                
+    with open(FILENAME, "w") as f:
+        f.writelines(lines)
+
+    if found:
+        print("Password updated.\n")
+    else:
+        print("No entry found for that website/username.\n")
+
 
 def delete_password():
     website = input("Enter website to delete: \n").strip()
@@ -79,11 +121,10 @@ def delete_password():
 
     with open(FILENAME, "r") as f:
         for line in f:
-            parts = line.strip().split(",", 2)
-
-            if len(parts) != 3:
+            data = parse_line(line)
+            if not data:
                 continue
-            stored_site, username, password = parts
+            stored_site, username, password = data
 
             if stored_site.lower() != website.lower():
                 lines.append(line)
@@ -107,47 +148,52 @@ def search_password():
 
     with open(FILENAME, "r") as f:
         for line in f:
-            parts = line.strip().split(",", 2)
-
-            if len(parts) != 3:
+            data = parse_line(line)
+            if not data:
                 continue
-            stored_site, username, password = parts
+            stored_site, username, password = data
 
             if stored_site.lower() == website.lower():
-                print(f"Username:", username)
-                print(f"Password:", password)
+                print(f"Username: {username}")
+                print(f"Password: {password}")
                 print()
                 found = True
 
     if not found:
             print("No password found for this website.\n")
 
-while True:
-    print("Password Manager")
-    print("1. Add Password")
-    print("2. View Password")
-    print("3. View All Passwords")
-    print("4. Delete Password")
-    print("5. Search Passwords")
-    print("6. Quit")
+def main():
 
-    choice = input("Choose an option: ")
+    while True:
+        print("\nPassword Manager")
+        print("1. Add Password")
+        print("2. View Password")
+        print("3. View All Passwords")
+        print("4. Delete Password")
+        print("5. Search Passwords")
+        print("6. Update Password")
+        print("7. Quit")
 
-    if choice == "1":
-        add_password()
-    elif choice == "2":
-        view_password()
-    elif choice == "3":
-        view_all()
-    elif choice == "4":
-        delete_password()
-    elif choice == "5":
-        search_password()
-    elif choice == "6":
-        break
-    else:
-        print("Not a valid input")
+        choice = input("Choose an option: ").strip()
 
+        if choice == "1":
+            add_password()
+        elif choice == "2":
+            view_password()
+        elif choice == "3":
+            view_all()
+        elif choice == "4":
+            delete_password()
+        elif choice == "5":
+            search_password()
+        elif choice == "6":
+            update_password()
+        elif choice == "7":
+            break
+        else:
+            print("Not a valid input")
+if __name__ == "__main__":
+    main()
 
 
 
