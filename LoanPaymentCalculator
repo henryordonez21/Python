@@ -1,0 +1,100 @@
+def get_user_input():
+
+    loan_amount = float(input("Enter loan amount: \n"))
+
+    interest_rate = float(input("Enter interest rate: \n"))
+
+    years = int(input("Enter years in whole numbers: \n"))
+
+    extra_payment = float(input("Enter the extra payment amount: \n"))
+
+    return loan_amount, interest_rate, years, extra_payment
+
+def calculate_monthly_payment(loan_amount,interest_rate,years,extra_payment):
+
+    rate = (interest_rate/100) / 12
+
+    total_payments = years * 12
+
+    monthly_payment = loan_amount* (( rate*((1+rate)**total_payments))/(((1+rate)**total_payments)-1))
+
+    actual_payment = monthly_payment + extra_payment
+
+    balance = loan_amount
+
+    return rate, total_payments, monthly_payment, actual_payment, balance
+
+def generate_amortization_schedule(rate,total_payments, monthly_payment, actual_payment, balance, extra_payment,):
+
+    print("-" * 75)
+
+    print(
+    f"{'Month':<8}"
+    f"{'Payment':>12}"
+    f"{'Interest':>12}"
+    f"{'Principal':>12}"
+    f"{'Balance':>15}"
+)
+
+    print("-" * 75)
+
+    total_interest = 0
+
+    for month in range(1, total_payments + 1):
+        
+        interest_payment = balance * rate
+
+        total_interest += interest_payment
+
+        principal_paid = monthly_payment - interest_payment
+
+        principal_reduction = extra_payment + principal_paid
+
+        balance = balance - principal_reduction
+
+        if balance <= 0:
+            balance = 0
+
+        print(
+            f"{month:<8}"
+            f"{actual_payment:>12.2f}"
+            f"{interest_payment:>12.2f}"
+            f"{principal_reduction:>12.2f}"
+            f"{balance:>15.2f}"
+        )
+
+        if balance <= 0:
+            break
+    return total_interest, month
+
+def print_summary(month, total_payments, loan_amount, interest_rate, years, actual_payment, extra_payment, total_interest):
+
+    print("-" * 75)
+
+    if month < total_payments:
+        print(f"Loan paid off in {month} months instead of {total_payments} months")
+
+    total_amount = loan_amount + total_interest
+            
+    print("Loan Summary")
+    print("-" * 75)
+    print(f"Loan Amount:       ${loan_amount:.2f}")
+    print(f"Interest Rate:     {interest_rate:.2f}%")
+    print(f"Loan Term:         {years} years")
+    print(f"Monthly Payment:   ${actual_payment:.2f}")
+    print(f"Extra Payment:     ${extra_payment:.2f}")
+    print(f"Total Interest:    ${total_interest:.2f}")
+    print(f"Total Amount Paid: ${total_amount:.2f}")
+
+    print("-" * 75)
+
+def main():
+    loan_amount, interest_rate, years, extra_payment = (get_user_input())
+
+    rate, total_payments, monthly_payment, actual_payment, balance = ( calculate_monthly_payment(loan_amount, interest_rate, years, extra_payment))
+
+    total_interest, month = generate_amortization_schedule(rate, total_payments, monthly_payment, actual_payment, balance, extra_payment)
+
+    print_summary(month,total_payments, loan_amount, interest_rate, years, actual_payment, extra_payment, total_interest)
+
+main()
